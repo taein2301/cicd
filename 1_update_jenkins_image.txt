@@ -1,0 +1,15 @@
+vi Dockerfile
+FROM jenkins/jenkins:lts
+USER root
+RUN apt-get update
+RUN curl -fsSL https://get.docker.com/ | sh
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl && chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
+
+docker build -t jenkins-docker .
+---
+vi run-jenkins.sh
+
+#!/bin/bash
+
+docker run --dns 172.16.0.200 -d --name jenkins -p 8080:8080 -p 50000:50000 -v /root/jenkins:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkins-docker
+

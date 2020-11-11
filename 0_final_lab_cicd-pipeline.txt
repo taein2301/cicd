@@ -1,0 +1,59 @@
+0. install gitlab & jenkins 
+docker run --restart=always --dns 172.16.0.200 -d --name jenkins -p 8080:8080 -p 50000:50000 -v /root/jenkins:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkins-docker
+refer gitlab_docker-compose.yml
+add host to /etc/hosts ( mygitlab.com myregistry.com )
+
+
+1. Build jenkins image with docker & kubectl
+refer update_jenkins_image.txt
+
+2. copy kubeconfig from master
+mkdir /root/.kube/config
+scp master:/etc/kubernetes/admin.conf /root/.kube/config
+docker cp /root/.kube jenkins:/root/
+
+2-1 verify command
+docker exec -it jenkins bash
+docker ps 
+kubectl get nodes
+
+3. create project on gitlab
+any name you want
+
+4. edit source
+clone repository 
+add server.js and package.json
+refer server.js and package.json file
+
+5. edit Dockerfile
+refer Dockerfile
+
+6. create yaml file for deployment
+refer  deploy-app.yml
+
+7. create .dockerignore
+Jenkinsfile
+deploy-app.yml
+
+8. install plugin 'docker pipeline plugin' on jenkins 
+to use pipeline on Jenkinsfile 
+
+9. create credential for plugin to use registry
+on jenkins credential manage
+type username and password 
+
+10. create credential for kubernetes to use registry
+docker login myreigstry.com
+username : [USER]
+password : [PASSWORD]
+kubectl create secret generic regcred --from-file=.dockerconfigjson=/root/.docker/config.json --type=kubernetes.io/dockerconfigjson
+
+11. edit Jenkinsfile 
+refer Jenkinsfile
+
+12. create project on jenkins and push all source to gitlab
+git add . ; git commit -m 'myapp' ; git push -u origin master
+
+kubectl expose deploy hello --port 80 --target-port 5000 --type=NodePort
+
+curl [NODE_IP]:[NODE_PORT]
